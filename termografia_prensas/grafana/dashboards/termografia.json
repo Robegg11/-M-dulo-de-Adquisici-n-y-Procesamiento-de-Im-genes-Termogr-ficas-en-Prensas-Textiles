@@ -1,0 +1,638 @@
+{
+  "uid": "termografia-prensa",
+  "title": "Sistema de Monitoreo Termográfico de Prensas Textiles",
+  "tags": [
+    "termografia",
+    "residencia"
+  ],
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "version": 2,
+  "refresh": "5s",
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "templating": {
+    "list": [
+      {
+        "name": "ciclo",
+        "label": "Ciclo",
+        "type": "query",
+        "datasource": {
+          "type": "postgres",
+          "uid": "termografia-pg"
+        },
+        "query": "SELECT '0' AS __value, 'Último ciclo (en vivo)' AS __text UNION ALL (SELECT id::text, 'Ciclo ' || id FROM ciclos ORDER BY id DESC LIMIT 50)",
+        "refresh": 1,
+        "sort": 0,
+        "includeAll": false,
+        "multi": false,
+        "current": {
+          "text": "Último ciclo (en vivo)",
+          "value": "0"
+        }
+      },
+      {
+        "name": "rojo_min",
+        "type": "constant",
+        "hide": 2,
+        "query": "150",
+        "current": {
+          "text": "150",
+          "value": "150"
+        },
+        "options": [
+          {
+            "selected": true,
+            "text": "150",
+            "value": "150"
+          }
+        ]
+      },
+      {
+        "name": "rojo_max",
+        "type": "constant",
+        "hide": 2,
+        "query": "220",
+        "current": {
+          "text": "220",
+          "value": "220"
+        },
+        "options": [
+          {
+            "selected": true,
+            "text": "220",
+            "value": "220"
+          }
+        ]
+      },
+      {
+        "name": "naranja_min",
+        "type": "constant",
+        "hide": 2,
+        "query": "160",
+        "current": {
+          "text": "160",
+          "value": "160"
+        },
+        "options": [
+          {
+            "selected": true,
+            "text": "160",
+            "value": "160"
+          }
+        ]
+      },
+      {
+        "name": "naranja_max",
+        "type": "constant",
+        "hide": 2,
+        "query": "210",
+        "current": {
+          "text": "210",
+          "value": "210"
+        },
+        "options": [
+          {
+            "selected": true,
+            "text": "210",
+            "value": "210"
+          }
+        ]
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": 1,
+      "type": "text",
+      "title": "",
+      "transparent": true,
+      "gridPos": {
+        "x": 0,
+        "y": 0,
+        "w": 24,
+        "h": 3
+      },
+      "options": {
+        "mode": "html",
+        "content": "<div style='text-align:center'><h2 style='margin:0'>TecNM &nbsp;|&nbsp; Instituto Tecnológico Superior del Sur de Guanajuato (ITSUR)</h2><h3 style='margin:4px 0 0 0'>Sistema de Monitoreo Termográfico de Prensas Textiles</h3></div>"
+      }
+    },
+    {
+      "id": 2,
+      "type": "stat",
+      "title": "Temperatura máxima",
+      "datasource": {
+        "type": "postgres",
+        "uid": "termografia-pg"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 3,
+        "w": 5,
+        "h": 8
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "termografia-pg"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT MAX(temp_max) AS \"Máxima\" FROM lecturas WHERE ciclo_id = (SELECT CASE WHEN $ciclo = 0 THEN MAX(id) ELSE $ciclo END FROM ciclos) AND ts = (SELECT MAX(ts) FROM lecturas WHERE ciclo_id = (SELECT CASE WHEN $ciclo = 0 THEN MAX(id) ELSE $ciclo END FROM ciclos))",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "celsius",
+          "decimals": 1,
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "orange"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "orange",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "none",
+        "textMode": "value",
+        "justifyMode": "center"
+      }
+    },
+    {
+      "id": 3,
+      "type": "stat",
+      "title": "Temperatura mínima",
+      "datasource": {
+        "type": "postgres",
+        "uid": "termografia-pg"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 11,
+        "w": 5,
+        "h": 8
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "termografia-pg"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT MIN(temp_min) AS \"Mínima\" FROM lecturas WHERE ciclo_id = (SELECT CASE WHEN $ciclo = 0 THEN MAX(id) ELSE $ciclo END FROM ciclos) AND ts = (SELECT MAX(ts) FROM lecturas WHERE ciclo_id = (SELECT CASE WHEN $ciclo = 0 THEN MAX(id) ELSE $ciclo END FROM ciclos))",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "celsius",
+          "decimals": 1,
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "blue"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "none",
+        "textMode": "value",
+        "justifyMode": "center"
+      }
+    },
+    {
+      "id": 4,
+      "type": "stat",
+      "title": "Temperatura promedio",
+      "datasource": {
+        "type": "postgres",
+        "uid": "termografia-pg"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 19,
+        "w": 5,
+        "h": 8
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "termografia-pg"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT AVG(temp_media) AS \"Promedio\" FROM lecturas WHERE ciclo_id = (SELECT CASE WHEN $ciclo = 0 THEN MAX(id) ELSE $ciclo END FROM ciclos) AND ts = (SELECT MAX(ts) FROM lecturas WHERE ciclo_id = (SELECT CASE WHEN $ciclo = 0 THEN MAX(id) ELSE $ciclo END FROM ciclos))",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "celsius",
+          "decimals": 1,
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "green"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "none",
+        "textMode": "value",
+        "justifyMode": "center"
+      }
+    },
+    {
+      "id": 5,
+      "type": "marcusolsson-dynamictext-panel",
+      "title": "Frame térmico del ciclo",
+      "datasource": {
+        "type": "postgres",
+        "uid": "termografia-pg"
+      },
+      "gridPos": {
+        "x": 5,
+        "y": 3,
+        "w": 14,
+        "h": 16
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "termografia-pg"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT frame_img AS frame FROM ciclos WHERE id = (SELECT CASE WHEN $ciclo = 0 THEN MAX(id) ELSE $ciclo END FROM ciclos)",
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "renderMode": "allRows",
+        "content": "<div style='display:flex;justify-content:center;align-items:center'>{{#each data}}<img src='{{{frame}}}' style='max-height:430px;max-width:100%;object-fit:contain' alt='Frame térmico'/>{{/each}}</div>",
+        "defaultContent": "<p style='text-align:center'>Sin imagen para este ciclo</p>",
+        "styles": "",
+        "helpers": "",
+        "afterRender": "",
+        "wrap": true
+      }
+    },
+    {
+      "id": 6,
+      "type": "trend",
+      "title": "Temperatura en tiempo real (segundos desde el inicio del ciclo)",
+      "datasource": {
+        "type": "postgres",
+        "uid": "termografia-pg"
+      },
+      "gridPos": {
+        "x": 5,
+        "y": 19,
+        "w": 14,
+        "h": 8
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "termografia-pg"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT EXTRACT(EPOCH FROM (l.ts - c.inicio))::float AS \"Segundos\", MAX(CASE WHEN l.roi = 'centro' THEN l.temp_media END) AS \"centro\", MAX(CASE WHEN l.roi = 'borde_izq' THEN l.temp_media END) AS \"borde_izq\", MAX(CASE WHEN l.roi = 'borde_der' THEN l.temp_media END) AS \"borde_der\", MAX(CASE WHEN l.roi = 'borde_sup' THEN l.temp_media END) AS \"borde_sup\", MAX(CASE WHEN l.roi = 'borde_inf' THEN l.temp_media END) AS \"borde_inf\" FROM lecturas l JOIN ciclos c ON c.id = l.ciclo_id WHERE l.ciclo_id = (SELECT CASE WHEN $ciclo = 0 THEN MAX(id) ELSE $ciclo END FROM ciclos) GROUP BY l.ts, c.inicio ORDER BY l.ts",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "celsius",
+          "custom": {
+            "lineWidth": 1,
+            "showPoints": "never"
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Segundos"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "s"
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi"
+        }
+      }
+    },
+    {
+      "id": 7,
+      "type": "stat",
+      "title": "Alerta · Verde",
+      "datasource": {
+        "type": "postgres",
+        "uid": "termografia-pg"
+      },
+      "gridPos": {
+        "x": 19,
+        "y": 3,
+        "w": 5,
+        "h": 8
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "termografia-pg"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "WITH u AS (SELECT temp_media AS t FROM lecturas WHERE ciclo_id = (SELECT CASE WHEN $ciclo = 0 THEN MAX(id) ELSE $ciclo END FROM ciclos) AND roi = 'centro' ORDER BY ts DESC LIMIT 1) SELECT CASE WHEN (t >= $naranja_min AND t <= $naranja_max AND (t >= $rojo_min AND t <= $rojo_max)) THEN 1 ELSE 0 END AS \"Estado\" FROM u",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "decimals": 1,
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "blue"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": null
+              }
+            ]
+          },
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "1": {
+                  "text": "SEGURO: continuar con la impresión",
+                  "color": "green",
+                  "index": 0
+                },
+                "0": {
+                  "text": "—",
+                  "color": "#2b2d33",
+                  "index": 1
+                }
+              }
+            }
+          ]
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "background",
+        "graphMode": "none",
+        "textMode": "value",
+        "justifyMode": "center"
+      }
+    },
+    {
+      "id": 8,
+      "type": "stat",
+      "title": "Alerta · Naranja",
+      "datasource": {
+        "type": "postgres",
+        "uid": "termografia-pg"
+      },
+      "gridPos": {
+        "x": 19,
+        "y": 11,
+        "w": 5,
+        "h": 8
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "termografia-pg"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "WITH u AS (SELECT temp_media AS t FROM lecturas WHERE ciclo_id = (SELECT CASE WHEN $ciclo = 0 THEN MAX(id) ELSE $ciclo END FROM ciclos) AND roi = 'centro' ORDER BY ts DESC LIMIT 1) SELECT CASE WHEN ((t >= $rojo_min AND t <= $rojo_max) AND NOT (t >= $naranja_min AND t <= $naranja_max AND (t >= $rojo_min AND t <= $rojo_max))) THEN 1 ELSE 0 END AS \"Estado\" FROM u",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "decimals": 1,
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "blue"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": null
+              }
+            ]
+          },
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "1": {
+                  "text": "REVISAR la prensa",
+                  "color": "orange",
+                  "index": 0
+                },
+                "0": {
+                  "text": "—",
+                  "color": "#2b2d33",
+                  "index": 1
+                }
+              }
+            }
+          ]
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "background",
+        "graphMode": "none",
+        "textMode": "value",
+        "justifyMode": "center"
+      }
+    },
+    {
+      "id": 9,
+      "type": "stat",
+      "title": "Alerta · Rojo",
+      "datasource": {
+        "type": "postgres",
+        "uid": "termografia-pg"
+      },
+      "gridPos": {
+        "x": 19,
+        "y": 19,
+        "w": 5,
+        "h": 8
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "termografia-pg"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "WITH u AS (SELECT temp_media AS t FROM lecturas WHERE ciclo_id = (SELECT CASE WHEN $ciclo = 0 THEN MAX(id) ELSE $ciclo END FROM ciclos) AND roi = 'centro' ORDER BY ts DESC LIMIT 1) SELECT CASE WHEN (t < $rojo_min OR t > $rojo_max) THEN 1 ELSE 0 END AS \"Estado\" FROM u",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "none",
+          "decimals": 1,
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "blue"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": null
+              }
+            ]
+          },
+          "mappings": [
+            {
+              "type": "value",
+              "options": {
+                "1": {
+                  "text": "PARAR la impresión y revisar el equipo",
+                  "color": "red",
+                  "index": 0
+                },
+                "0": {
+                  "text": "—",
+                  "color": "#2b2d33",
+                  "index": 1
+                }
+              }
+            }
+          ]
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "background",
+        "graphMode": "none",
+        "textMode": "value",
+        "justifyMode": "center"
+      }
+    }
+  ]
+}

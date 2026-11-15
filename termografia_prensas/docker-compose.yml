@@ -1,0 +1,28 @@
+services:
+  timescaledb:
+    image: timescale/timescaledb:latest-pg16
+    environment:
+      POSTGRES_DB: termografia
+      POSTGRES_USER: termo
+      POSTGRES_PASSWORD: termo_pass
+    ports:
+      - "5432:5432"
+    volumes:
+      - timescale_data:/var/lib/postgresql/data
+
+  grafana:
+    image: grafana/grafana:latest
+    environment:
+      GF_INSTALL_PLUGINS: marcusolsson-dynamictext-panel
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning
+      - ./grafana/dashboards:/etc/dashboards
+      - grafana_data:/var/lib/grafana
+    depends_on:
+      - timescaledb
+
+volumes:
+  timescale_data:
+  grafana_data:
